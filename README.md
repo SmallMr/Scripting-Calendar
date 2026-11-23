@@ -2,6 +2,9 @@
 
 Scripting 桌面日历小组件：公历、农历、节气与节日、休息日和补班日。
 
+直接在 iPhone 上打开：
+[一键导入 Scripting Calendar](https://www.scripting.fun/import_scripts/?urls=%5B%22https%3A%2F%2Fraw.githubusercontent.com%2FSmallMr%2FScripting-Calendar%2Fmain%2FScripting-Calendar.scripting%22%5D)
+
 ## 使用
 
 1. 用仓库根目录的 `Scripting-Calendar.scripting` 导入 Scripting。
