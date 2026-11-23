@@ -29,6 +29,21 @@ const FESTIVAL_NAMES: Record<string, string> = {
   小年: '小年'
 }
 
+const LUNAR_FESTIVALS: Record<string, string> = {
+  '1-1': '春节',
+  '1-15': '元宵',
+  '2-2': '龙抬头',
+  '5-5': '端午',
+  '7-7': '七夕',
+  '7-15': '中元',
+  '8-15': '中秋',
+  '9-9': '重阳',
+  '10-1': '寒衣节',
+  '10-15': '下元',
+  '12-8': '腊八',
+  '12-23': '小年'
+}
+
 export const WEEKDAYS_SUNDAY = [
   '周日',
   '周一',
@@ -97,6 +112,11 @@ function normalizeFestival(name: string) {
 }
 
 function getLunarFestival(date: Date, lunar: SolarLunarResult) {
+  if (!lunar.isLeap) {
+    const fixed = LUNAR_FESTIVALS[`${lunar.lMonth}-${lunar.lDay}`]
+    if (fixed) return fixed
+  }
+
   const festivals = solarLunar.getFestivals(
     date.getFullYear(),
     date.getMonth() + 1,
