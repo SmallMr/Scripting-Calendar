@@ -4,6 +4,7 @@ export type CalendarPalette = {
   muted: string
   faint: string
   outside: string
+  weekend: string
   event: string
   eventDot: string
   red: string
@@ -17,6 +18,7 @@ const LIGHT_PALETTE: CalendarPalette = {
   muted: '#707075',
   faint: '#A1A1A7',
   outside: '#C9C9CE',
+  weekend: '#5B5B60',
   event: '#7C9DA9',
   eventDot: '#9BB5BE',
   red: '#E65356',
@@ -30,6 +32,7 @@ const DARK_PALETTE: CalendarPalette = {
   muted: 'rgba(246,246,247,0.64)',
   faint: 'rgba(246,246,247,0.46)',
   outside: 'rgba(246,246,247,0.28)',
+  weekend: 'rgba(246,246,247,0.76)',
   event: '#A7C6D0',
   eventDot: '#84AAB5',
   red: '#E65356',

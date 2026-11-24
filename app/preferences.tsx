@@ -29,7 +29,7 @@ import type { HolidayMarker, HolidayYearData } from '../core/holidays'
 import { readSettings, writeSettings } from '../core/settings'
 import type { CalendarSettings, WeekStart } from '../core/settings'
 
-const VERSION = '1.0.12'
+const VERSION = '1.0.13'
 
 const WIDGET_ERROR_KEY = 'calendar-widget-error'
 

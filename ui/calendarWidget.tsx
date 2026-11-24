@@ -78,7 +78,11 @@ function DayCell({
   const eventLabel = cell.isCurrentMonth ? cell.eventLabel : ''
   const subline = eventLabel || lunarLabel
   const isOutside = !cell.isCurrentMonth
-  const numberColor = isOutside ? palette.outside : palette.ink
+  const numberColor = isOutside
+    ? palette.outside
+    : cell.isWeekend
+      ? palette.weekend
+      : palette.ink
   const sublineColor = isOutside
     ? palette.outside
     : eventLabel
