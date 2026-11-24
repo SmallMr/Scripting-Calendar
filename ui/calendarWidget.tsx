@@ -357,7 +357,14 @@ export function CalendarWidget({
         ))}
       </VStack>
 
-      <HStack spacing={0} frame={{ width: innerWidth, height: footerHeight }}>
+      <HStack
+        spacing={0}
+        frame={{
+          width: innerWidth,
+          height: footerHeight,
+          alignment: 'leading'
+        }}
+      >
         <RoundedRectangle
           fill={palette.red}
           cornerRadius={2 * scale}
@@ -369,7 +376,7 @@ export function CalendarWidget({
           padding={{ leading: 8 * scale }}
         >
           <Text
-            font={11.5 * scale}
+            font={13 * scale}
             fontWeight="semibold"
             foregroundStyle={palette.ink}
             lineLimit={1}
@@ -377,7 +384,7 @@ export function CalendarWidget({
             {footer.dateLabel}
           </Text>
           <Text
-            font={11.5 * scale}
+            font={12.5 * scale}
             fontWeight="regular"
             foregroundStyle={palette.muted}
             lineLimit={1}
