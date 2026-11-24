@@ -5,13 +5,15 @@ export type CalendarSettings = {
   weekStart: WeekStart
   fontScale: number
   fontWeightStep: number
+  showIntlFestivals: boolean
 }
 
 export const DEFAULT_SETTINGS: CalendarSettings = {
   background: '#F8F8FA',
   weekStart: 'sunday',
   fontScale: 1,
-  fontWeightStep: -1
+  fontWeightStep: -1,
+  showIntlFestivals: true
 }
 
 const SETTINGS_KEY = 'calendar-settings'
@@ -54,7 +56,8 @@ export function readSettings(): CalendarSettings {
         : DEFAULT_SETTINGS.background,
     weekStart: saved.weekStart === 'monday' ? 'monday' : 'sunday',
     fontScale: normalizeFontScale(saved.fontScale),
-    fontWeightStep: normalizeFontWeightStep(saved.fontWeightStep)
+    fontWeightStep: normalizeFontWeightStep(saved.fontWeightStep),
+    showIntlFestivals: saved.showIntlFestivals !== false
   }
 }
 

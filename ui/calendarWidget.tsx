@@ -212,7 +212,12 @@ export function CalendarWidget({
   const rowHeight = dayAreaHeight / 6
   const cellWidth = innerWidth / 7
   const weekLabels = getWeekLabels(settings.weekStart)
-  const cells = buildMonthGrid(year, month, settings.weekStart)
+  const cells = buildMonthGrid(
+    year,
+    month,
+    settings.weekStart,
+    settings.showIntlFestivals
+  )
   const restSet = new Set(holidays.rest)
   const workSet = new Set(holidays.work)
   const footer = getFooterParts(now)

@@ -94,6 +94,70 @@ const LUNAR_FESTIVALS: Record<string, string> = {
   '12-23': '小年'
 }
 
+const INTL_FIXED_FESTIVALS: Record<string, string> = {
+  '02-14': '情人节',
+  '03-08': '妇女节',
+  '04-01': '愚人节',
+  '10-31': '万圣夜',
+  '11-01': '万圣节',
+  '12-24': '平安夜',
+  '12-25': '圣诞节',
+  '12-31': '跨年夜'
+}
+
+function nthWeekdayOfMonth(
+  year: number,
+  month: number,
+  weekday: number,
+  nth: number
+) {
+  const first = new Date(year, month - 1, 1, 12)
+  const offset = (weekday - first.getDay() + 7) % 7
+  return 1 + offset + (nth - 1) * 7
+}
+
+function easterDate(year: number) {
+  const a = year % 19
+  const b = Math.floor(year / 100)
+  const c = year % 100
+  const d = Math.floor(b / 4)
+  const e = b % 4
+  const f = Math.floor((b + 8) / 25)
+  const g = Math.floor((b - f + 1) / 3)
+  const h = (19 * a + b - d - g + 15) % 30
+  const i = Math.floor(c / 4)
+  const k = c % 4
+  const l = (32 + 2 * e + 2 * i - h - k) % 7
+  const m = Math.floor((a + 11 * h + 22 * l) / 451)
+  const month = Math.floor((h + l - 7 * m + 114) / 31)
+  const day = ((h + l - 7 * m + 114) % 31) + 1
+  return { month, day }
+}
+
+function getIntlFestival(date: Date) {
+  const year = date.getFullYear()
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+
+  const fixed = INTL_FIXED_FESTIVALS[`${pad2(month)}-${pad2(day)}`]
+  if (fixed) return fixed
+
+  if (month === 5 && day === nthWeekdayOfMonth(year, 5, 0, 2)) {
+    return '母亲节'
+  }
+  if (month === 6 && day === nthWeekdayOfMonth(year, 6, 0, 3)) {
+    return '父亲节'
+  }
+  if (month === 11 && day === nthWeekdayOfMonth(year, 11, 4, 4)) {
+    return '感恩节'
+  }
+  const easter = easterDate(year)
+  if (month === easter.month && day === easter.day) {
+    return '复活节'
+  }
+  return ''
+}
+
 export function getLunar(date: Date): SolarLunarResult | null {
   try {
     const result = lunarApi.solar2lunar(
@@ -155,24 +219,31 @@ function getLunarFestival(date: Date, lunar: SolarLunarResult) {
   return ''
 }
 
-export function getEventLabel(date: Date, lunar: SolarLunarResult | null) {
+export function getEventLabel(
+  date: Date,
+  lunar: SolarLunarResult | null,
+  showIntlFestivals = false
+) {
   if (!lunar) return ''
   if (lunar.isTerm && lunar.term) return lunar.term
 
   const lunarFestival = getLunarFestival(date, lunar)
   if (lunarFestival) return lunarFestival
 
-  return (
+  const solarFestival =
     SOLAR_FESTIVALS[
       `${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`
     ] ?? ''
-  )
+  if (solarFestival) return solarFestival
+
+  return showIntlFestivals ? getIntlFestival(date) : ''
 }
 
 export function buildMonthGrid(
   year: number,
   month: number,
-  weekStart: WeekStart
+  weekStart: WeekStart,
+  showIntlFestivals = false
 ): CalendarCell[] {
   const first = new Date(year, month - 1, 1, 12)
   const startOffset =
@@ -199,7 +270,7 @@ export function buildMonthGrid(
       isToday: sameDay(date, today),
       isWeekend: isWeekend(date),
       lunar,
-      eventLabel: getEventLabel(date, lunar)
+    eventLabel: getEventLabel(date, lunar, showIntlFestivals)
     }
   })
 }
