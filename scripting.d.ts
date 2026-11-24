@@ -43,13 +43,6 @@ declare module 'scripting' {
     }): AppIntentFactory<T>
   }
 
-  export const Storage: {
-    get<T = unknown>(key: string): T | null
-    set<T>(key: string, value: T): boolean
-    remove(key: string): void
-    contains(key: string): boolean
-  }
-
   export const Script: { exit(): void }
 
   export const Navigation: {
@@ -115,6 +108,15 @@ declare const Dialog: {
     cancelLabel?: string
     confirmLabel?: string
   }): Promise<boolean>
+}
+
+declare const Storage: {
+  get<T = unknown>(key: string, options?: { shared?: boolean }): T | null
+  set<T>(key: string, value: T, options?: { shared?: boolean }): boolean
+  remove(key: string, options?: { shared?: boolean }): void
+  contains(key: string, options?: { shared?: boolean }): boolean
+  clear(): void
+  keys(): string[]
 }
 
 declare const console: {

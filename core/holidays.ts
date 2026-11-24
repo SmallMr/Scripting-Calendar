@@ -1,4 +1,4 @@
-import { Storage, fetch } from 'scripting'
+import { fetch } from 'scripting'
 import { dateKey, isWeekend, pad2 } from './dateUtils'
 
 export type HolidayMarker = 'rest' | 'work' | 'none'

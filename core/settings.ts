@@ -1,5 +1,3 @@
-import { Storage } from 'scripting'
-
 export type WeekStart = 'sunday' | 'monday'
 
 export type CalendarSettings = {

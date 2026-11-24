@@ -1,4 +1,4 @@
-import { Storage, Text, VStack, Widget } from 'scripting'
+import { Text, VStack, Widget } from 'scripting'
 import { getEffectiveHolidayYear } from './core/holidays'
 import { readMonthCursor } from './core/monthState'
 import { readSettings } from './core/settings'

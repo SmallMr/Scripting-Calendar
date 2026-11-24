@@ -8,7 +8,6 @@ import {
   ProgressView,
   Section,
   Spacer,
-  Storage,
   Text,
   TextField,
   VStack,
@@ -30,7 +29,7 @@ import type { HolidayMarker, HolidayYearData } from '../core/holidays'
 import { readSettings, writeSettings } from '../core/settings'
 import type { CalendarSettings, WeekStart } from '../core/settings'
 
-const VERSION = '1.0.9'
+const VERSION = '1.0.10'
 
 const WIDGET_ERROR_KEY = 'calendar-widget-error'
 

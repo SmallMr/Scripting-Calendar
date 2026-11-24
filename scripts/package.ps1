@@ -7,6 +7,7 @@ $files = @(
   'index.tsx',
   'widget.tsx',
   'app_intents.tsx',
+  'app/preferences.tsx',
   'core/calendar.ts',
   'core/dateUtils.ts',
   'core/holidays.ts',
