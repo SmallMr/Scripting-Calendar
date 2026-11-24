@@ -64,6 +64,7 @@ function DayCell({
   width,
   height,
   scale,
+  fontScale,
   marker,
   palette
 }: {
@@ -71,9 +72,11 @@ function DayCell({
   width: number
   height: number
   scale: number
+  fontScale: number
   marker: 'rest' | 'work' | null
   palette: ReturnType<typeof paletteFor>
 }) {
+  const fs = (value: number) => value * scale * fontScale
   const lunarLabel = getLunarDayLabel(cell.lunar)
   const eventLabel = cell.isCurrentMonth ? cell.eventLabel : ''
   const subline = eventLabel || lunarLabel
@@ -104,7 +107,7 @@ function DayCell({
           />
           <VStack alignment="center" spacing={0}>
             <Text
-              font={16.5 * scale}
+              font={fs(16.5)}
               fontWeight="medium"
               foregroundStyle={palette.white}
               lineLimit={1}
@@ -112,7 +115,7 @@ function DayCell({
               {String(cell.day)}
             </Text>
             <Text
-              font={9.5 * scale}
+              font={fs(9.5)}
               fontWeight="medium"
               foregroundStyle="rgba(255,255,255,0.78)"
               lineLimit={1}
@@ -124,7 +127,7 @@ function DayCell({
       ) : (
         <VStack alignment="center" spacing={0}>
           <Text
-            font={16.5 * scale}
+            font={fs(16.5)}
             fontWeight={isOutside ? 'regular' : 'medium'}
             foregroundStyle={numberColor}
             lineLimit={1}
@@ -132,7 +135,7 @@ function DayCell({
             {String(cell.day)}
           </Text>
           <Text
-            font={9.5 * scale}
+            font={fs(9.5)}
             fontWeight={eventLabel ? 'medium' : 'regular'}
             foregroundStyle={sublineColor}
             lineLimit={1}
@@ -181,6 +184,8 @@ export function CalendarWidget({
   const width = display.width || 338
   const height = display.height || 354
   const scale = Math.max(0.45, Math.min(width / 390, height / 409))
+  const fontScale = settings.fontScale ?? 1
+  const fs = (value: number) => value * scale * fontScale
   const paddingX = 18 * scale
   const paddingTop = 15 * scale
   const paddingBottom = 11 * scale
@@ -260,7 +265,7 @@ export function CalendarWidget({
           >
             <HStack alignment="lastTextBaseline" spacing={7 * scale}>
               <Text
-                font={22.5 * scale}
+                font={fs(22.5)}
                 fontWeight="regular"
                 foregroundStyle={palette.header}
                 lineLimit={1}
@@ -268,7 +273,7 @@ export function CalendarWidget({
                 {String(year)}
               </Text>
               <Text
-                font={18 * scale}
+                font={fs(18)}
                 fontWeight="regular"
                 foregroundStyle={palette.muted}
                 lineLimit={1}
@@ -276,7 +281,7 @@ export function CalendarWidget({
                 /
               </Text>
               <Text
-                font={22.5 * scale}
+                font={fs(22.5)}
                 fontWeight="regular"
                 foregroundStyle={palette.header}
                 lineLimit={1}
@@ -315,7 +320,7 @@ export function CalendarWidget({
         {weekLabels.map((label) => (
           <Text
             key={label}
-            font={13.5 * scale}
+            font={fs(13.5)}
             fontWeight="medium"
             foregroundStyle={palette.muted}
             lineLimit={1}
@@ -352,6 +357,7 @@ export function CalendarWidget({
                   width={cellWidth}
                   height={rowHeight}
                   scale={scale}
+                  fontScale={fontScale}
                   marker={marker}
                   palette={palette}
                 />
@@ -380,7 +386,7 @@ export function CalendarWidget({
           padding={{ leading: 8 * scale }}
         >
           <Text
-            font={13 * scale}
+            font={fs(13)}
             fontWeight="semibold"
             foregroundStyle={palette.ink}
             lineLimit={1}
@@ -388,7 +394,7 @@ export function CalendarWidget({
             {footer.dateLabel}
           </Text>
           <Text
-            font={12.5 * scale}
+            font={fs(12.5)}
             fontWeight="regular"
             foregroundStyle={palette.muted}
             lineLimit={1}

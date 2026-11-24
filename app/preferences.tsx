@@ -7,6 +7,7 @@ import {
   Picker,
   ProgressView,
   Section,
+  Slider,
   Spacer,
   Text,
   TextField,
@@ -26,10 +27,16 @@ import {
   writeHolidayYear
 } from '../core/holidays'
 import type { HolidayMarker, HolidayYearData } from '../core/holidays'
-import { readSettings, writeSettings } from '../core/settings'
+import {
+  FONT_SCALE_MAX,
+  FONT_SCALE_MIN,
+  FONT_SCALE_STEP,
+  readSettings,
+  writeSettings
+} from '../core/settings'
 import type { CalendarSettings, WeekStart } from '../core/settings'
 
-const VERSION = '1.0.13'
+const VERSION = '1.0.14'
 
 const WIDGET_ERROR_KEY = 'calendar-widget-error'
 
@@ -320,6 +327,32 @@ export function SettingsScreen() {
             value={colorDraft}
             onChanged={changeColor}
           />
+        </Section>
+
+        <Section
+          header={<Text>字号</Text>}
+          footer={
+            <Text>
+              调整日历里所有文字的大小，公历、农历、表头与底部信息同步变化；100% 为默认大小。
+            </Text>
+          }
+        >
+          <VStack alignment="leading" spacing={10}>
+            <HStack spacing={8}>
+              <Text font={15}>整体字号</Text>
+              <Spacer />
+              <Text font={15} foregroundStyle="#8E8E93">
+                {`${Math.round(settings.fontScale * 100)}%`}
+              </Text>
+            </HStack>
+            <Slider
+              min={FONT_SCALE_MIN}
+              max={FONT_SCALE_MAX}
+              step={FONT_SCALE_STEP}
+              value={settings.fontScale}
+              onChanged={(value: number) => patch({ fontScale: value })}
+            />
+          </VStack>
         </Section>
 
         <Section

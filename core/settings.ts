@@ -3,14 +3,27 @@ export type WeekStart = 'sunday' | 'monday'
 export type CalendarSettings = {
   background: string
   weekStart: WeekStart
+  fontScale: number
 }
 
 export const DEFAULT_SETTINGS: CalendarSettings = {
   background: '#F8F8FA',
-  weekStart: 'sunday'
+  weekStart: 'sunday',
+  fontScale: 1
 }
 
 const SETTINGS_KEY = 'calendar-settings'
+
+export const FONT_SCALE_MIN = 0.85
+export const FONT_SCALE_MAX = 1.25
+export const FONT_SCALE_STEP = 0.05
+
+function normalizeFontScale(value: unknown) {
+  if (typeof value !== 'number' || !isFinite(value)) {
+    return DEFAULT_SETTINGS.fontScale
+  }
+  return Math.min(FONT_SCALE_MAX, Math.max(FONT_SCALE_MIN, value))
+}
 
 export function readSettings(): CalendarSettings {
   let saved: Partial<CalendarSettings> = {}
@@ -24,7 +37,8 @@ export function readSettings(): CalendarSettings {
       typeof saved.background === 'string' && saved.background.trim()
         ? saved.background
         : DEFAULT_SETTINGS.background,
-    weekStart: saved.weekStart === 'monday' ? 'monday' : 'sunday'
+    weekStart: saved.weekStart === 'monday' ? 'monday' : 'sunday',
+    fontScale: normalizeFontScale(saved.fontScale)
   }
 }
 

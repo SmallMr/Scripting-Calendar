@@ -88,6 +88,7 @@ declare module 'scripting' {
   export const Rectangle: (props: any) => any
   export const RoundedRectangle: (props: any) => any
   export const Section: (props: any) => any
+  export const Slider: (props: any) => any
   export const Spacer: (props: any) => any
   export const ScrollView: (props: any) => any
   export const Text: (props: any) => any
