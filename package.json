@@ -1,6 +1,6 @@
 {
   "name": "scripting-calendar",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "private": true,
   "description": "Scripting calendar widget with lunar dates and editable holidays.",
   "scripts": {

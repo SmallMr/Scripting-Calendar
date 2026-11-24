@@ -33,7 +33,9 @@ import {
 } from '../core/settings'
 import type { CalendarSettings, WeekStart } from '../core/settings'
 
-const VERSION = '1.0.15'
+const VERSION = '1.0.16'
+
+const AUTO_REFRESH_INTERVAL = 30 * 24 * 60 * 60 * 1000
 
 const PRESETS = [
   { color: '#F8F8FA', label: '云白' },
@@ -73,6 +75,41 @@ export function SettingsScreen() {
       console.error(error)
     }
   }, [settings])
+
+  useEffect(() => {
+    let active = true
+    const refresh = async () => {
+      let changed = false
+      for (const year of [thisYear, thisYear + 1]) {
+        const current = readHolidayYear(year)
+        if (
+          current &&
+          Date.now() - current.updatedAt < AUTO_REFRESH_INTERVAL
+        ) {
+          continue
+        }
+        try {
+          const fetched = await fetchHolidayYear(year)
+          if (!active) return
+          writeHolidayYear(fetched)
+          changed = true
+          if (year === holidayYear) setSaved(fetched)
+        } catch (error) {
+          console.error(error)
+        }
+      }
+      if (!changed) return
+      try {
+        Widget.reloadAll()
+      } catch (error) {
+        console.error(error)
+      }
+    }
+    refresh()
+    return () => {
+      active = false
+    }
+  }, [])
 
   const patch = (changes: Partial<CalendarSettings>) =>
     setSettings((previous) => ({ ...previous, ...changes }))
