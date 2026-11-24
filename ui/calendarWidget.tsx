@@ -21,7 +21,7 @@ import type { CalendarCell } from '../core/calendar'
 import type { HolidayYearData } from '../core/holidays'
 import type { CalendarSettings } from '../core/settings'
 import type { MonthCursor } from '../core/monthState'
-import { paletteFor } from './theme'
+import { paletteFor, shiftWeight } from './theme'
 
 type CalendarWidgetProps = {
   settings: CalendarSettings
@@ -65,6 +65,7 @@ function DayCell({
   height,
   scale,
   fontScale,
+  weightStep,
   marker,
   palette
 }: {
@@ -73,10 +74,12 @@ function DayCell({
   height: number
   scale: number
   fontScale: number
+  weightStep: number
   marker: 'rest' | 'work' | null
   palette: ReturnType<typeof paletteFor>
 }) {
   const fs = (value: number) => value * scale * fontScale
+  const w = (base: string) => shiftWeight(base, weightStep)
   const lunarLabel = getLunarDayLabel(cell.lunar)
   const eventLabel = cell.isCurrentMonth ? cell.eventLabel : ''
   const subline = eventLabel || lunarLabel
@@ -108,7 +111,7 @@ function DayCell({
           <VStack alignment="center" spacing={0}>
             <Text
               font={fs(16.5)}
-              fontWeight="medium"
+              fontWeight={w('medium')}
               foregroundStyle={palette.white}
               lineLimit={1}
             >
@@ -116,7 +119,7 @@ function DayCell({
             </Text>
             <Text
               font={fs(9.5)}
-              fontWeight="medium"
+              fontWeight={w('medium')}
               foregroundStyle="rgba(255,255,255,0.78)"
               lineLimit={1}
             >
@@ -128,7 +131,7 @@ function DayCell({
         <VStack alignment="center" spacing={0}>
           <Text
             font={fs(16.5)}
-            fontWeight={isOutside ? 'regular' : 'medium'}
+            fontWeight={isOutside ? w('regular') : w('medium')}
             foregroundStyle={numberColor}
             lineLimit={1}
           >
@@ -136,7 +139,7 @@ function DayCell({
           </Text>
           <Text
             font={fs(9.5)}
-            fontWeight={eventLabel ? 'medium' : 'regular'}
+            fontWeight={eventLabel ? w('medium') : w('regular')}
             foregroundStyle={sublineColor}
             lineLimit={1}
           >
@@ -185,7 +188,9 @@ export function CalendarWidget({
   const height = display.height || 354
   const scale = Math.max(0.45, Math.min(width / 390, height / 409))
   const fontScale = settings.fontScale ?? 1
+  const weightStep = settings.fontWeightStep ?? 0
   const fs = (value: number) => value * scale * fontScale
+  const w = (base: string) => shiftWeight(base, weightStep)
   const paddingX = 18 * scale
   const paddingTop = 15 * scale
   const paddingBottom = 11 * scale
@@ -321,7 +326,7 @@ export function CalendarWidget({
           <Text
             key={label}
             font={fs(13.5)}
-            fontWeight="medium"
+            fontWeight={w('medium')}
             foregroundStyle={palette.muted}
             lineLimit={1}
             frame={{ width: cellWidth, alignment: 'center' }}
@@ -358,6 +363,7 @@ export function CalendarWidget({
                   height={rowHeight}
                   scale={scale}
                   fontScale={fontScale}
+                  weightStep={weightStep}
                   marker={marker}
                   palette={palette}
                 />
@@ -387,7 +393,7 @@ export function CalendarWidget({
         >
           <Text
             font={fs(13)}
-            fontWeight="semibold"
+            fontWeight={w('semibold')}
             foregroundStyle={palette.ink}
             lineLimit={1}
           >
@@ -395,7 +401,7 @@ export function CalendarWidget({
           </Text>
           <Text
             font={fs(12.5)}
-            fontWeight="regular"
+            fontWeight={w('regular')}
             foregroundStyle={palette.muted}
             lineLimit={1}
           >

@@ -30,12 +30,15 @@ import {
   FONT_SCALE_MAX,
   FONT_SCALE_MIN,
   FONT_SCALE_STEP,
+  FONT_WEIGHT_MAX,
+  FONT_WEIGHT_MIN,
+  FONT_WEIGHT_STEP,
   readSettings,
   writeSettings
 } from '../core/settings'
 import type { CalendarSettings, WeekStart } from '../core/settings'
 
-const VERSION = '1.0.17'
+const VERSION = '1.0.18'
 
 const AUTO_REFRESH_INTERVAL = 30 * 24 * 60 * 60 * 1000
 
@@ -47,6 +50,14 @@ const PRESETS = [
 ]
 
 const CUSTOM_TAG = 'custom'
+
+const WEIGHT_LABELS: Record<number, string> = {
+  [-2]: '极细',
+  [-1]: '较细',
+  0: '标准',
+  1: '较粗',
+  2: '粗'
+}
 
 function shortMessage(message: string) {
   return message.length > 80 ? `${message.slice(0, 80)}…` : message
@@ -253,10 +264,10 @@ export function SettingsScreen() {
         </Section>
 
         <Section
-          header={<Text>字号</Text>}
+          header={<Text>字体</Text>}
           footer={
             <Text>
-              调整日历里所有文字的大小，公历、农历、表头与底部信息同步变化；100% 为默认大小。
+              调节整块日历的字号与笔画粗细，公历、农历、表头与底部信息同步变化；字号 100%、粗细「较细」为默认效果。
             </Text>
           }
         >
@@ -274,6 +285,22 @@ export function SettingsScreen() {
               step={FONT_SCALE_STEP}
               value={settings.fontScale}
               onChanged={(value: number) => patch({ fontScale: value })}
+            />
+            <HStack spacing={8}>
+              <Text font={15}>笔画粗细</Text>
+              <Spacer />
+              <Text font={15} foregroundStyle="#8E8E93">
+                {WEIGHT_LABELS[settings.fontWeightStep] ?? '标准'}
+              </Text>
+            </HStack>
+            <Slider
+              min={FONT_WEIGHT_MIN}
+              max={FONT_WEIGHT_MAX}
+              step={FONT_WEIGHT_STEP}
+              value={settings.fontWeightStep}
+              onChanged={(value: number) =>
+                patch({ fontWeightStep: value })
+              }
             />
           </VStack>
         </Section>

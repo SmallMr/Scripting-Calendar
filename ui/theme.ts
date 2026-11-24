@@ -12,6 +12,26 @@ export type CalendarPalette = {
   white: string
 }
 
+const WEIGHT_STEPS = [
+  'ultraLight',
+  'thin',
+  'light',
+  'regular',
+  'medium',
+  'semibold',
+  'bold'
+]
+
+export function shiftWeight(base: string, step: number) {
+  const index = WEIGHT_STEPS.indexOf(base)
+  if (index < 0) return base
+  const next = Math.min(
+    WEIGHT_STEPS.length - 1,
+    Math.max(0, index + Math.round(step))
+  )
+  return WEIGHT_STEPS[next]
+}
+
 const LIGHT_PALETTE: CalendarPalette = {
   ink: '#2F2F34',
   header: 'rgba(28,28,30,0.84)',
