@@ -50,18 +50,27 @@ function normalizeData(
 }
 
 export function readHolidayYear(year: number): HolidayYearData | null {
-  return normalizeData(
-    Storage.get<HolidayYearData>(storageKey(year)),
-    year
-  )
+  try {
+    return normalizeData(
+      Storage.get<HolidayYearData>(storageKey(year)),
+      year
+    )
+  } catch (error) {
+    console.error(error)
+    return null
+  }
 }
 
 export function writeHolidayYear(data: HolidayYearData) {
-  Storage.set(storageKey(data.year), {
-    ...data,
-    rest: uniqueSorted(data.rest, data.year),
-    work: uniqueSorted(data.work, data.year)
-  })
+  try {
+    Storage.set(storageKey(data.year), {
+      ...data,
+      rest: uniqueSorted(data.rest, data.year),
+      work: uniqueSorted(data.work, data.year)
+    })
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 export function clearHolidayYear(year: number) {

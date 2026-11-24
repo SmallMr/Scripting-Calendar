@@ -15,7 +15,12 @@ export const DEFAULT_SETTINGS: CalendarSettings = {
 const SETTINGS_KEY = 'calendar-settings'
 
 export function readSettings(): CalendarSettings {
-  const saved = Storage.get<Partial<CalendarSettings>>(SETTINGS_KEY) ?? {}
+  let saved: Partial<CalendarSettings> = {}
+  try {
+    saved = Storage.get<Partial<CalendarSettings>>(SETTINGS_KEY) ?? {}
+  } catch (error) {
+    console.error(error)
+  }
   return {
     background:
       typeof saved.background === 'string' && saved.background.trim()
@@ -26,5 +31,9 @@ export function readSettings(): CalendarSettings {
 }
 
 export function writeSettings(settings: CalendarSettings) {
-  Storage.set(SETTINGS_KEY, settings)
+  try {
+    Storage.set(SETTINGS_KEY, settings)
+  } catch (error) {
+    console.error(error)
+  }
 }
