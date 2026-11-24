@@ -38,7 +38,7 @@ import {
 } from '../core/settings'
 import type { CalendarSettings, WeekStart } from '../core/settings'
 
-const VERSION = '1.0.18'
+const VERSION = '1.0.19'
 
 const AUTO_REFRESH_INTERVAL = 30 * 24 * 60 * 60 * 1000
 

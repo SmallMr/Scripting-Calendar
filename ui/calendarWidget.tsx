@@ -268,7 +268,7 @@ export function CalendarWidget({
             intent={ResetMonthIntent(undefined)}
             buttonStyle="plain"
           >
-            <HStack alignment="lastTextBaseline" spacing={7 * scale}>
+            <HStack alignment="center" spacing={6 * scale}>
               <Text
                 font={fs(22.5)}
                 fontWeight="regular"
@@ -278,7 +278,7 @@ export function CalendarWidget({
                 {String(year)}
               </Text>
               <Text
-                font={fs(18)}
+                font={fs(22.5)}
                 fontWeight="regular"
                 foregroundStyle={palette.muted}
                 lineLimit={1}
