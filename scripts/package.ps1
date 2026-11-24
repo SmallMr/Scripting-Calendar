@@ -14,7 +14,7 @@ $files = @(
   'core/settings.ts',
   'ui/calendarWidget.tsx',
   'ui/theme.ts',
-  'vendor/solarlunar.js'
+  'vendor/solarlunar.ts'
 )
 
 if (Test-Path -LiteralPath $output) {

@@ -1,6 +1,38 @@
-import solarLunar from '../vendor/solarlunar.js'
-import type { SolarLunarResult } from '../vendor/solarlunar'
+import solarLunar from '../vendor/solarlunar'
 import type { WeekStart } from './settings'
+
+export type SolarLunarResult = {
+  lYear: number
+  lMonth: number
+  lDay: number
+  animal: string
+  yearCn: string
+  monthCn: string
+  dayCn: string
+  cYear: number
+  cMonth: number
+  cDay: number
+  gzYear: string
+  gzMonth: string
+  gzDay: string
+  isToday: boolean
+  isLeap: boolean
+  nWeek: number
+  ncWeek: string
+  isTerm: boolean
+  term: string
+}
+
+type SolarLunarApi = {
+  solar2lunar(
+    year: number,
+    month: number,
+    day: number
+  ): SolarLunarResult | -1
+  getFestivals(year: number, month: number, day: number): string[]
+}
+
+const lunarApi = solarLunar as SolarLunarApi
 
 export type CalendarCell = {
   date: Date
@@ -98,7 +130,7 @@ export function isWeekend(date: Date) {
 }
 
 export function getLunar(date: Date): SolarLunarResult | null {
-  const result = solarLunar.solar2lunar(
+  const result = lunarApi.solar2lunar(
     date.getFullYear(),
     date.getMonth() + 1,
     date.getDate()
@@ -117,7 +149,7 @@ function getLunarFestival(date: Date, lunar: SolarLunarResult) {
     if (fixed) return fixed
   }
 
-  const festivals = solarLunar.getFestivals(
+  const festivals = lunarApi.getFestivals(
     date.getFullYear(),
     date.getMonth() + 1,
     date.getDate()

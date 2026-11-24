@@ -66,8 +66,7 @@ Scripting 桌面日历小组件：公历、农历、节气与节日、休息日�
 │   ├── calendarWidget.tsx   桌面组件界面
 │   └── theme.ts             明暗底色适配
 ├── vendor/
-│   ├── solarlunar.js        农历与节气计算
-│   ├── solarlunar.d.ts
+│   ├── solarlunar.ts        农历与节气计算
 │   └── LICENSE.solarlunar
 └── scripts/package.ps1      生成 .scripting 包
 ```
