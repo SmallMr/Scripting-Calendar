@@ -32,25 +32,23 @@ type CalendarWidgetProps = {
 function Badge({
   label,
   background,
-  scale
+  size
 }: {
   label: '休' | '班'
   background: string
-  scale: number
+  size: number
 }) {
-  const size = 13 * scale
   return (
     <ZStack
       frame={{ width: size, height: size }}
-      offset={{ x: -2 * scale, y: 2 * scale }}
     >
       <RoundedRectangle
         fill={background}
-        cornerRadius={4 * scale}
+        cornerRadius={size * 0.3}
         frame={{ width: size, height: size }}
       />
       <Text
-        font={9 * scale}
+        font={size * 0.72}
         fontWeight="bold"
         foregroundStyle="#FFFFFF"
         lineLimit={1}
@@ -89,6 +87,7 @@ function DayCell({
   const hasDot = !!eventLabel && !cell.isToday
   const coreWidth = 42 * scale
   const coreHeight = 44 * scale
+  const badgeSize = 11.5 * scale
 
   return (
     <ZStack frame={{ width, height }}>
@@ -147,11 +146,17 @@ function DayCell({
       )}
 
       {marker && !isOutside ? (
-        <ZStack alignment="topTrailing" frame={{ width, height }}>
+        <ZStack
+          frame={{ width: badgeSize, height: badgeSize }}
+          position={{
+            x: width - badgeSize / 2 - 1 * scale,
+            y: badgeSize / 2 + 1 * scale
+          }}
+        >
           <Badge
             label={marker === 'rest' ? '休' : '班'}
             background={marker === 'rest' ? palette.red : palette.work}
-            scale={scale}
+            size={badgeSize}
           />
         </ZStack>
       ) : null}
@@ -178,6 +183,8 @@ export function CalendarWidget({
   const innerWidth = width - paddingX * 2
   const innerHeight = height - paddingTop - paddingBottom
   const headHeight = 40 * scale
+  const arrowWidth = 34 * scale
+  const titleWidth = innerWidth - arrowWidth * 2
   const weekdayHeight = 25 * scale
   const footerHeight = 34 * scale
   const dayAreaHeight = Math.max(
@@ -209,12 +216,21 @@ export function CalendarWidget({
       frame={{ maxWidth: 'infinity', maxHeight: 'infinity' }}
       widgetBackground={settings.background}
     >
-      <HStack spacing={0} frame={{ maxWidth: 'infinity', height: headHeight }}>
-        <HStack frame={{ width: 38 * scale }} alignment="leading">
+      <HStack
+        spacing={0}
+        frame={{ width: innerWidth, height: headHeight }}
+      >
+        <HStack
+          frame={{
+            width: arrowWidth,
+            height: headHeight,
+            alignment: 'leading'
+          }}
+        >
           <Button
             intent={MoveMonthIntent({ delta: -1 })}
             buttonStyle="plain"
-            frame={{ width: 33 * scale, height: 33 * scale }}
+            frame={{ width: 30 * scale, height: 30 * scale }}
           >
             <Image
               systemName="chevron.left"
@@ -222,14 +238,17 @@ export function CalendarWidget({
               scaleToFit
               renderingMode="template"
               foregroundStyle={palette.header}
-              frame={{ width: 18 * scale, height: 18 * scale }}
+              frame={{ width: 17 * scale, height: 17 * scale }}
             />
           </Button>
         </HStack>
 
         <HStack
-          alignment="center"
-          frame={{ maxWidth: 'infinity', height: headHeight }}
+          frame={{
+            width: titleWidth,
+            height: headHeight,
+            alignment: 'center'
+          }}
         >
           <Button
             intent={ResetMonthIntent(undefined)}
@@ -265,13 +284,16 @@ export function CalendarWidget({
         </HStack>
 
         <HStack
-          frame={{ width: 38 * scale }}
-          alignment="trailing"
+          frame={{
+            width: arrowWidth,
+            height: headHeight,
+            alignment: 'trailing'
+          }}
         >
           <Button
             intent={MoveMonthIntent({ delta: 1 })}
             buttonStyle="plain"
-            frame={{ width: 33 * scale, height: 33 * scale }}
+            frame={{ width: 30 * scale, height: 30 * scale }}
           >
             <Image
               systemName="chevron.right"
@@ -279,7 +301,7 @@ export function CalendarWidget({
               scaleToFit
               renderingMode="template"
               foregroundStyle={palette.header}
-              frame={{ width: 18 * scale, height: 18 * scale }}
+              frame={{ width: 17 * scale, height: 17 * scale }}
             />
           </Button>
         </HStack>

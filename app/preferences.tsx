@@ -21,7 +21,7 @@ import {
   clearHolidayYear,
   fetchHolidayYear,
   formatUpdatedAt,
-  makeWeekendHolidayYear,
+  makeEmptyHolidayYear,
   readHolidayYear,
   writeHolidayYear
 } from '../core/holidays'
@@ -29,7 +29,7 @@ import type { HolidayMarker, HolidayYearData } from '../core/holidays'
 import { readSettings, writeSettings } from '../core/settings'
 import type { CalendarSettings, WeekStart } from '../core/settings'
 
-const VERSION = '1.0.10'
+const VERSION = '1.0.11'
 
 const WIDGET_ERROR_KEY = 'calendar-widget-error'
 
@@ -219,7 +219,7 @@ export function SettingsScreen() {
     }
   }
 
-  const data = saved ?? makeWeekendHolidayYear(holidayYear)
+  const data = saved ?? makeEmptyHolidayYear(holidayYear)
 
   const handleYearChange = (value: string) => {
     const nextYear = Number(value)
@@ -259,7 +259,7 @@ export function SettingsScreen() {
   const handleClearYear = async () => {
     const confirmed = await Dialog.confirm({
       title: `清除 ${holidayYear} 年配置`,
-      message: '清除后该年只按普通周末显示休息日。',
+      message: '清除后该年不再显示任何休息日或补班日标记。',
       cancelLabel: '取消',
       confirmLabel: '清除'
     })
@@ -281,7 +281,7 @@ export function SettingsScreen() {
     ? saved.source === 'online'
       ? `在线获取 · ${saved.provider ?? '节假日接口'}`
       : '已本地编辑'
-    : '尚未在线获取，当前按普通周末显示'
+    : '尚未在线获取，暂不显示休、班标记'
 
   return (
     <NavigationStack>
