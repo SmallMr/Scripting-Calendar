@@ -16,17 +16,14 @@ import {
   useEffect,
   useState
 } from 'scripting'
-import { dateKey, getWeekLabels } from '../core/dateUtils'
 import {
-  applyHolidayMarker,
-  clearHolidayYear,
   fetchHolidayYear,
   formatUpdatedAt,
   makeEmptyHolidayYear,
   readHolidayYear,
   writeHolidayYear
 } from '../core/holidays'
-import type { HolidayMarker, HolidayYearData } from '../core/holidays'
+import type { HolidayYearData } from '../core/holidays'
 import {
   FONT_SCALE_MAX,
   FONT_SCALE_MIN,
@@ -36,26 +33,7 @@ import {
 } from '../core/settings'
 import type { CalendarSettings, WeekStart } from '../core/settings'
 
-const VERSION = '1.0.14'
-
-const WIDGET_ERROR_KEY = 'calendar-widget-error'
-
-type WidgetError = {
-  message: string
-  detail?: string
-  time: number
-}
-
-function readWidgetError(): WidgetError | null {
-  try {
-    const value = Storage.get<WidgetError>(WIDGET_ERROR_KEY)
-    if (!value || typeof value.message !== 'string') return null
-    return value
-  } catch (error) {
-    console.error(error)
-    return null
-  }
-}
+const VERSION = '1.0.15'
 
 const PRESETS = [
   { color: '#F8F8FA', label: '云白' },
@@ -66,117 +44,11 @@ const PRESETS = [
 
 const CUSTOM_TAG = 'custom'
 
-const EDITOR_MODES: { value: HolidayMarker; label: string }[] = [
-  { value: 'rest', label: '休息日（休）' },
-  { value: 'work', label: '补班日（班）' },
-  { value: 'none', label: '清除标记' }
-]
-
-type EditorCell = {
-  key: string
-  day: number
-  inMonth: boolean
-  today: boolean
-}
-
 function isValidColor(value: string) {
   const color = value.trim()
   return (
     /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(color) ||
     /^rgba?\(/i.test(color)
-  )
-}
-
-function buildGrid(
-  year: number,
-  month: number,
-  weekStart: WeekStart
-): EditorCell[] {
-  const first = new Date(year, month - 1, 1, 12)
-  const offset =
-    weekStart === 'monday' ? (first.getDay() + 6) % 7 : first.getDay()
-  const todayKey = dateKey(new Date())
-  return Array.from({ length: 42 }, (_, index) => {
-    const date = new Date(year, month - 1, 1 - offset + index, 12)
-    const key = dateKey(date)
-    return {
-      key,
-      day: date.getDate(),
-      inMonth: date.getFullYear() === year && date.getMonth() === month - 1,
-      today: key === todayKey
-    }
-  })
-}
-
-function markerFor(data: HolidayYearData, key: string): HolidayMarker {
-  if (data.work.includes(key)) return 'work'
-  if (data.rest.includes(key)) return 'rest'
-  return 'none'
-}
-
-function EditorGrid({
-  year,
-  month,
-  weekStart,
-  data,
-  onPressed
-}: {
-  year: number
-  month: number
-  weekStart: WeekStart
-  data: HolidayYearData
-  onPressed: (key: string) => void
-}) {
-  const cells = buildGrid(year, month, weekStart)
-  const labels = getWeekLabels(weekStart)
-  return (
-    <VStack alignment="leading" spacing={0}>
-      <HStack spacing={0}>
-        {labels.map((label) => (
-          <Text
-            key={label}
-            font={10.5}
-            foregroundStyle="secondaryLabel"
-            frame={{ maxWidth: 'infinity', alignment: 'center' }}
-          >
-            {label}
-          </Text>
-        ))}
-      </HStack>
-      {Array.from({ length: 6 }, (_, row) => (
-        <HStack key={String(row)} spacing={0}>
-          {cells.slice(row * 7, row * 7 + 7).map((cell) => (
-            <Button key={cell.key} action={() => onPressed(cell.key)}>
-              <VStack
-                alignment="center"
-                spacing={0}
-                frame={{ maxWidth: 'infinity' }}
-              >
-                <Text
-                  font={15}
-                  foregroundStyle={
-                    cell.inMonth
-                      ? cell.today
-                        ? '#E65356'
-                        : 'label'
-                      : 'tertiaryLabel'
-                  }
-                >
-                  {String(cell.day)}
-                </Text>
-                <Text font={9} foregroundStyle="tertiaryLabel">
-                  {markerFor(data, cell.key) === 'rest'
-                    ? '休'
-                    : markerFor(data, cell.key) === 'work'
-                      ? '班'
-                      : ' '}
-                </Text>
-              </VStack>
-            </Button>
-          ))}
-        </HStack>
-      ))}
-    </VStack>
   )
 }
 
@@ -191,15 +63,7 @@ export function SettingsScreen() {
   const [saved, setSaved] = useState<HolidayYearData | null>(() =>
     readHolidayYear(thisYear)
   )
-  const [editorMonth, setEditorMonth] = useState(
-    () => new Date().getMonth() + 1
-  )
-  const [editorMode, setEditorMode] = useState<HolidayMarker>('rest')
   const [fetching, setFetching] = useState(false)
-  const [editorExpanded, setEditorExpanded] = useState(false)
-  const [widgetError, setWidgetError] = useState<WidgetError | null>(() =>
-    readWidgetError()
-  )
 
   useEffect(() => {
     writeSettings(settings)
@@ -256,26 +120,6 @@ export function SettingsScreen() {
     }
   }
 
-  const handleEditDay = (key: string) => {
-    const next = applyHolidayMarker(data, key, editorMode)
-    writeHolidayYear(next)
-    setSaved(next)
-    Widget.reloadAll()
-  }
-
-  const handleClearYear = async () => {
-    const confirmed = await Dialog.confirm({
-      title: `清除 ${holidayYear} 年配置`,
-      message: '清除后该年不再显示任何休息日或补班日标记。',
-      cancelLabel: '取消',
-      confirmLabel: '清除'
-    })
-    if (!confirmed) return
-    clearHolidayYear(holidayYear)
-    setSaved(null)
-    Widget.reloadAll()
-  }
-
   const openWidgetPreview = async () => {
     try {
       await Widget.preview()
@@ -287,7 +131,7 @@ export function SettingsScreen() {
   const sourceText = saved
     ? saved.source === 'online'
       ? `在线获取 · ${saved.provider ?? '节假日接口'}`
-      : '已本地编辑'
+      : '本地保存的数据'
     : '尚未在线获取，暂不显示休、班标记'
 
   return (
@@ -378,9 +222,19 @@ export function SettingsScreen() {
         <Section
           header={<Text>节假日数据</Text>}
           footer={
-            <Text>
-              数据按年在线获取并保存在本机，失败时保留原配置。重新获取会覆盖该年的本地修改。
-            </Text>
+            <VStack alignment="leading" spacing={4}>
+              <Text>
+                数据按年在线获取并保存在本机，失败时保留原配置。重新获取会覆盖该年已有的数据。
+              </Text>
+              <Text>
+                {`${holidayYear} 年 · ${data.rest.length} 个休息日 · ${data.work.length} 个补班日`}
+              </Text>
+              <Text>
+                {saved?.updatedAt
+                  ? `${sourceText} · 更新于 ${formatUpdatedAt(saved.updatedAt)}`
+                  : sourceText}
+              </Text>
+            </VStack>
           }
         >
           <Picker
@@ -399,85 +253,6 @@ export function SettingsScreen() {
               {fetching ? <ProgressView /> : null}
             </HStack>
           </Button>
-
-          <HStack>
-            <Text>{`${data.rest.length} 个休息日`}</Text>
-            <Spacer />
-            <Text>{`${data.work.length} 个补班日`}</Text>
-          </HStack>
-
-          <Text font={12} foregroundStyle="secondaryLabel">
-            {sourceText}
-          </Text>
-
-          {saved?.updatedAt ? (
-            <Text font={12} foregroundStyle="tertiaryLabel">
-              {`更新于 ${formatUpdatedAt(saved.updatedAt)}`}
-            </Text>
-          ) : null}
-        </Section>
-
-        <Section
-          header={<Text>逐日配置</Text>}
-          footer={
-            <Text>
-              先选好下方动作，再点日期。同一天不会同时显示休息与补班。
-            </Text>
-          }
-        >
-          <Picker
-            title="编辑月份"
-            value={String(editorMonth)}
-            onChanged={(value: string) => setEditorMonth(Number(value))}
-          >
-            {Array.from({ length: 12 }, (_, index) => (
-              <Text key={String(index + 1)} tag={String(index + 1)}>
-                {`${index + 1} 月`}
-              </Text>
-            ))}
-          </Picker>
-
-          <Picker
-            title="点按日期时"
-            value={editorMode}
-            onChanged={(value: string) =>
-              setEditorMode(value as HolidayMarker)
-            }
-          >
-            {EDITOR_MODES.map((mode) => (
-              <Text key={mode.value} tag={mode.value}>
-                {mode.label}
-              </Text>
-            ))}
-          </Picker>
-
-          {editorExpanded ? (
-            <EditorGrid
-              year={holidayYear}
-              month={editorMonth}
-              weekStart={settings.weekStart}
-              data={data}
-              onPressed={handleEditDay}
-            />
-          ) : (
-            <Button
-              title="打开逐日配置"
-              action={() => setEditorExpanded(true)}
-            />
-          )}
-
-          {editorExpanded ? (
-            <Button
-              title="收起逐日配置"
-              action={() => setEditorExpanded(false)}
-            />
-          ) : null}
-
-          <Button
-            title={`清除 ${holidayYear} 年配置`}
-            role="destructive"
-            action={handleClearYear}
-          />
         </Section>
 
         <Section
@@ -491,47 +266,6 @@ export function SettingsScreen() {
           <Button title="预览小组件" action={openWidgetPreview} />
         </Section>
 
-        <Section
-          header={<Text>组件诊断</Text>}
-          footer={
-            <Text>
-              组件渲染失败时会在这里留下最后一条错误，用来定位问题。
-            </Text>
-          }
-        >
-          {widgetError ? (
-            <VStack alignment="leading" spacing={4}>
-              <Text font={12} foregroundStyle="#E65356">
-                {widgetError.message}
-              </Text>
-              <Text font={11} foregroundStyle="secondaryLabel">
-                {formatUpdatedAt(widgetError.time)}
-              </Text>
-              {widgetError.detail ? (
-                <Text font={10} foregroundStyle="tertiaryLabel">
-                  {widgetError.detail}
-                </Text>
-              ) : null}
-            </VStack>
-          ) : (
-            <Text font={12} foregroundStyle="secondaryLabel">
-              暂无错误记录
-            </Text>
-          )}
-
-          <Button
-            title="清除错误记录"
-            role="destructive"
-            action={() => {
-              try {
-                Storage.remove(WIDGET_ERROR_KEY)
-              } catch (error) {
-                console.error(error)
-              }
-              setWidgetError(null)
-            }}
-          />
-        </Section>
       </List>
     </NavigationStack>
   )
