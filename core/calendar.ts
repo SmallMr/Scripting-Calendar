@@ -101,8 +101,7 @@ const INTL_FIXED_FESTIVALS: Record<string, string> = {
   '10-31': '万圣夜',
   '11-01': '万圣节',
   '12-24': '平安夜',
-  '12-25': '圣诞节',
-  '12-31': '跨年夜'
+  '12-25': '圣诞节'
 }
 
 function nthWeekdayOfMonth(

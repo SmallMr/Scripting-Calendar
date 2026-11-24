@@ -39,7 +39,7 @@ import {
 } from '../core/settings'
 import type { CalendarSettings, WeekStart } from '../core/settings'
 
-const VERSION = '1.0.20'
+const VERSION = '1.0.21'
 
 const AUTO_REFRESH_INTERVAL = 30 * 24 * 60 * 60 * 1000
 
@@ -310,7 +310,7 @@ export function SettingsScreen() {
           header={<Text>日历</Text>}
           footer={
             <Text>
-              切换每周起始后，表头和日期立即按新顺序排列。休息日右上角标「休」，补班日右上角标「班」。国际节日包含情人节、愚人节、母亲节、父亲节、万圣夜、万圣节、感恩节、平安夜、圣诞节、跨年夜与复活节，和节气一样显示在日期下方。
+              切换每周起始后，表头和日期立即按新顺序排列。休息日右上角标「休」，补班日右上角标「班」。国际节日包含情人节、愚人节、母亲节、父亲节、万圣夜、万圣节、感恩节、平安夜、圣诞节与复活节，和节气一样显示在日期下方。
             </Text>
           }
         >
