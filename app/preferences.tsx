@@ -17,11 +17,7 @@ import {
   useEffect,
   useState
 } from 'scripting'
-import {
-  buildMonthGrid,
-  getWeekLabels
-} from '../core/calendar'
-import type { CalendarCell } from '../core/calendar'
+import { dateKey, getWeekLabels } from '../core/dateUtils'
 import {
   applyHolidayMarker,
   clearHolidayYear,
@@ -56,6 +52,39 @@ const EDITOR_MODES: { value: HolidayMarker; label: string }[] = [
   { value: 'work', label: '补班日（班）' },
   { value: 'none', label: '清除标记' }
 ]
+
+const BUILD_TAG = 'v1.0.3'
+
+type EditorCell = {
+  key: string
+  day: number
+  isCurrentMonth: boolean
+  isToday: boolean
+}
+
+function buildEditorGrid(
+  year: number,
+  month: number,
+  weekStart: WeekStart
+): EditorCell[] {
+  const first = new Date(year, month - 1, 1, 12)
+  const startOffset =
+    weekStart === 'monday'
+      ? (first.getDay() + 6) % 7
+      : first.getDay()
+  const todayKey = dateKey(new Date())
+  return Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(year, month - 1, 1 - startOffset + index, 12)
+    const key = dateKey(date)
+    return {
+      key,
+      day: date.getDate(),
+      isCurrentMonth:
+        date.getFullYear() === year && date.getMonth() === month - 1,
+      isToday: key === todayKey
+    }
+  })
+}
 
 function isValidBackgroundColor(value: string) {
   const color = value.trim()
@@ -125,7 +154,7 @@ function EditorDayCell({
   data,
   onPressed
 }: {
-  cell: CalendarCell
+  cell: EditorCell
   data: HolidayYearData
   onPressed: (key: string) => void
 }) {
@@ -219,7 +248,7 @@ function EditorGrid({
   data: HolidayYearData
   onPressed: (key: string) => void
 }) {
-  const cells = buildMonthGrid(year, month, weekStart)
+  const cells = buildEditorGrid(year, month, weekStart)
   const labels = getWeekLabels(weekStart)
   return (
     <VStack alignment="leading" spacing={0}>
@@ -377,7 +406,7 @@ export function SettingsScreen() {
         }}
       >
         <Section
-          header={<Text>外观</Text>}
+          header={<Text>{`外观 · ${BUILD_TAG}`}</Text>}
           footer={
             <Text>
               底色只作用于整块小组件，不会给每个日期格单独加背景或边框。

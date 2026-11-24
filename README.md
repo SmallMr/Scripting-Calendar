@@ -2,14 +2,29 @@
 
 Scripting 桌面日历小组件：公历、农历、节气与节日、休息日和补班日。
 
-直接在 iPhone 上打开：
+当前版本：`1.0.3`（打开脚本后，「外观」分组标题会显示 `外观 · v1.0.3`）。
+
+## 只有一个脚本
+
+本项目始终以**同一个**「日历 / Calendar」脚本维护。更新时只替换这个脚本里的文件，
+不要再导入第二个脚本。
+
+### 更新已安装的脚本
+
+1. 在 Scripting 里打开已安装的「日历」脚本。
+2. 进入该脚本的设置，把「远程来源」设为 `https://github.com/SmallMr/Scripting-Calendar`。
+3. 点「检查更新」并等待文件替换完成，然后重新打开脚本。
+4. 看到「外观 · v1.0.3」即表示已更新到这个版本。
+
+### 首次安装
+
+只有从未安装过时才需要导入：
 [一键导入 Scripting Calendar](https://www.scripting.fun/import_scripts/?urls=%5B%22https%3A%2F%2Fraw.githubusercontent.com%2FSmallMr%2FScripting-Calendar%2Fmain%2FScripting-Calendar.scripting%22%5D)
 
-## 使用
+### 启用
 
-1. 用仓库根目录的 `Scripting-Calendar.scripting` 导入 Scripting。
-2. 打开脚本，先在「节假日数据」里分别选择本年、下一年并点「在线获取」。
-3. 到桌面添加大号小组件。
+1. 打开脚本，先在「节假日数据」里分别选择本年、下一年并点「在线获取」。
+2. 到桌面添加大号小组件。
 
 获取失败的年份不会猜测法定节假日；未获取时仅按普通周六、周日显示休息日。获取成功后数据保存在本机，可以继续逐日修改。
 
@@ -59,6 +74,7 @@ Scripting 桌面日历小组件：公历、农历、节气与节日、休息日�
 ├── app/preferences.tsx      设置与逐日配置界面
 ├── core/
 │   ├── calendar.ts          月历、农历、节气、节日
+│   ├── dateUtils.ts         日期与每周起始工具
 │   ├── holidays.ts          在线获取、本地缓存和逐日编辑
 │   ├── monthState.ts        当前查看月份
 │   └── settings.ts          背景色与每周起始
