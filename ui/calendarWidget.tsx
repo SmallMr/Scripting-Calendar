@@ -1,5 +1,4 @@
 import {
-  Button,
   Circle,
   HStack,
   Image,
@@ -9,7 +8,6 @@ import {
   Widget,
   ZStack
 } from 'scripting'
-import { MoveMonthIntent, ResetMonthIntent } from '../app_intents'
 import {
   buildMonthGrid,
   getFooterParts,
@@ -211,77 +209,60 @@ export function CalendarWidget({
     >
       <HStack spacing={0} frame={{ maxWidth: 'infinity', height: headHeight }}>
         <HStack frame={{ width: 38 * scale }} alignment="leading">
-          <Button
-            intent={MoveMonthIntent({ delta: -1 })}
-            buttonStyle="plain"
-            frame={{ width: 33 * scale, height: 33 * scale }}
-          >
-            <Image
-              systemName="chevron.left"
-              resizable
-              scaleToFit
-              renderingMode="template"
-              foregroundStyle={palette.header}
-              frame={{ width: 18 * scale, height: 18 * scale }}
-            />
-          </Button>
+          <Image
+            systemName="chevron.left"
+            resizable
+            scaleToFit
+            renderingMode="template"
+            foregroundStyle={palette.header}
+            frame={{ width: 18 * scale, height: 18 * scale }}
+          />
         </HStack>
 
         <HStack
           alignment="center"
           frame={{ maxWidth: 'infinity', height: headHeight }}
         >
-          <Button
-            intent={ResetMonthIntent(undefined)}
-            buttonStyle="plain"
-          >
-            <HStack alignment="lastTextBaseline" spacing={7 * scale}>
-              <Text
-                font={22.5 * scale}
-                fontWeight="regular"
-                foregroundStyle={palette.header}
-                lineLimit={1}
-              >
-                {String(year)}
-              </Text>
-              <Text
-                font={18 * scale}
-                fontWeight="regular"
-                foregroundStyle={palette.muted}
-                lineLimit={1}
-              >
-                /
-              </Text>
-              <Text
-                font={22.5 * scale}
-                fontWeight="regular"
-                foregroundStyle={palette.header}
-                lineLimit={1}
-              >
-                {pad2(month)}
-              </Text>
-            </HStack>
-          </Button>
+          <HStack alignment="lastTextBaseline" spacing={7 * scale}>
+            <Text
+              font={22.5 * scale}
+              fontWeight="regular"
+              foregroundStyle={palette.header}
+              lineLimit={1}
+            >
+              {String(year)}
+            </Text>
+            <Text
+              font={18 * scale}
+              fontWeight="regular"
+              foregroundStyle={palette.muted}
+              lineLimit={1}
+            >
+              /
+            </Text>
+            <Text
+              font={22.5 * scale}
+              fontWeight="regular"
+              foregroundStyle={palette.header}
+              lineLimit={1}
+            >
+              {pad2(month)}
+            </Text>
+          </HStack>
         </HStack>
 
         <HStack
           frame={{ width: 38 * scale }}
           alignment="trailing"
         >
-          <Button
-            intent={MoveMonthIntent({ delta: 1 })}
-            buttonStyle="plain"
-            frame={{ width: 33 * scale, height: 33 * scale }}
-          >
-            <Image
-              systemName="chevron.right"
-              resizable
-              scaleToFit
-              renderingMode="template"
-              foregroundStyle={palette.header}
-              frame={{ width: 18 * scale, height: 18 * scale }}
-            />
-          </Button>
+          <Image
+            systemName="chevron.right"
+            resizable
+            scaleToFit
+            renderingMode="template"
+            foregroundStyle={palette.header}
+            frame={{ width: 18 * scale, height: 18 * scale }}
+          />
         </HStack>
       </HStack>
 
