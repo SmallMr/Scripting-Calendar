@@ -15,6 +15,48 @@ export type HolidayYearData = {
 
 const HOLIDAY_KEY_PREFIX = 'calendar-holidays-v2-'
 const LEGACY_HOLIDAY_KEY_PREFIX = 'calendar-holidays-'
+const FETCH_FAILURE_KEY = 'calendar-holidays-fetch-failure'
+
+export type HolidayFetchFailure = { year: number; message: string }
+
+export type HolidayFetchFailureState = {
+  time: number
+  failures: HolidayFetchFailure[]
+}
+
+export function readFetchFailure(): HolidayFetchFailureState | null {
+  try {
+    const value = Storage.get<HolidayFetchFailureState>(FETCH_FAILURE_KEY)
+    if (!value || !Array.isArray(value.failures)) return null
+    return {
+      time: Number(value.time) || 0,
+      failures: value.failures.filter(
+        (item) =>
+          item &&
+          typeof item.year === 'number' &&
+          typeof item.message === 'string'
+      )
+    }
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
+
+export function writeFetchFailure(failures: HolidayFetchFailure[]) {
+  try {
+    if (failures.length === 0) {
+      Storage.remove(FETCH_FAILURE_KEY)
+      return
+    }
+    Storage.set<HolidayFetchFailureState>(FETCH_FAILURE_KEY, {
+      time: Date.now(),
+      failures
+    })
+  } catch (error) {
+    console.error(error)
+  }
+}
 
 function storageKey(year: number) {
   return `${HOLIDAY_KEY_PREFIX}${year}`

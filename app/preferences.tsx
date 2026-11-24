@@ -20,10 +20,12 @@ import {
   fetchHolidayYear,
   formatUpdatedAt,
   makeEmptyHolidayYear,
+  readFetchFailure,
   readHolidayYear,
+  writeFetchFailure,
   writeHolidayYear
 } from '../core/holidays'
-import type { HolidayYearData } from '../core/holidays'
+import type { HolidayFetchFailure, HolidayYearData } from '../core/holidays'
 import {
   FONT_SCALE_MAX,
   FONT_SCALE_MIN,
@@ -33,7 +35,7 @@ import {
 } from '../core/settings'
 import type { CalendarSettings, WeekStart } from '../core/settings'
 
-const VERSION = '1.0.16'
+const VERSION = '1.0.17'
 
 const AUTO_REFRESH_INTERVAL = 30 * 24 * 60 * 60 * 1000
 
@@ -45,6 +47,10 @@ const PRESETS = [
 ]
 
 const CUSTOM_TAG = 'custom'
+
+function shortMessage(message: string) {
+  return message.length > 80 ? `${message.slice(0, 80)}…` : message
+}
 
 function isValidColor(value: string) {
   const color = value.trim()
@@ -66,6 +72,18 @@ export function SettingsScreen() {
     readHolidayYear(thisYear)
   )
   const [fetching, setFetching] = useState(false)
+  const [failureState, setFailureState] = useState<{
+    time: number
+    failures: HolidayFetchFailure[]
+  } | null>(() => readFetchFailure())
+  const failures = failureState?.failures ?? []
+
+  const applyFailures = (errors: HolidayFetchFailure[]) => {
+    setFailureState(
+      errors.length > 0 ? { time: Date.now(), failures: errors } : null
+    )
+    writeFetchFailure(errors)
+  }
 
   useEffect(() => {
     writeSettings(settings)
@@ -80,7 +98,8 @@ export function SettingsScreen() {
     let active = true
     const refresh = async () => {
       let changed = false
-      for (const year of [thisYear, thisYear + 1]) {
+      const errors: HolidayFetchFailure[] = []
+      for (const year of [thisYear - 1, thisYear, thisYear + 1]) {
         const current = readHolidayYear(year)
         if (
           current &&
@@ -96,8 +115,11 @@ export function SettingsScreen() {
           if (year === holidayYear) setSaved(fetched)
         } catch (error) {
           console.error(error)
+          errors.push({ year, message: String(error) })
         }
       }
+      if (!active) return
+      applyFailures(errors)
       if (!changed) return
       try {
         Widget.reloadAll()
@@ -137,23 +159,43 @@ export function SettingsScreen() {
 
   const handleFetch = async () => {
     setFetching(true)
+    const done: string[] = []
+    const errors: HolidayFetchFailure[] = []
+    for (const year of [thisYear - 1, thisYear, thisYear + 1]) {
+      try {
+        const fetched = await fetchHolidayYear(year)
+        writeHolidayYear(fetched)
+        if (year === holidayYear) setSaved(fetched)
+        done.push(
+          `${year} 年：${fetched.rest.length} 个休息日、${fetched.work.length} 个补班日`
+        )
+      } catch (error) {
+        console.error(error)
+        errors.push({ year, message: String(error) })
+      }
+    }
+    applyFailures(errors)
     try {
-      const fetched = await fetchHolidayYear(holidayYear)
-      writeHolidayYear(fetched)
-      setSaved(fetched)
       Widget.reloadAll()
-      await Dialog.alert({
-        title: '节假日已更新',
-        message: `${holidayYear} 年：${fetched.rest.length} 个休息日、${fetched.work.length} 个补班日。来源：${fetched.provider ?? '在线数据'}`
-      })
     } catch (error) {
       console.error(error)
+    }
+    setFetching(false)
+    if (errors.length === 0) {
       await Dialog.alert({
-        title: '获取失败',
-        message: String(error)
+        title: '节假日已更新',
+        message: done.join('\n')
       })
-    } finally {
-      setFetching(false)
+    } else {
+      await Dialog.alert({
+        title: done.length > 0 ? '部分年份获取失败' : '获取失败',
+        message: [
+          ...done,
+          ...errors.map(
+            (item) => `${item.year} 年失败：${shortMessage(item.message)}`
+          )
+        ].join('\n')
+      })
     }
   }
 
@@ -271,14 +313,22 @@ export function SettingsScreen() {
                   ? `${sourceText} · 更新于 ${formatUpdatedAt(saved.updatedAt)}`
                   : sourceText}
               </Text>
+              {failures.length > 0 ? (
+                <Text foregroundStyle="#C0392B">
+                  {`自动获取失败${failureState?.time ? `（${formatUpdatedAt(failureState.time)}）` : ''}：${failures
+                    .map((item) => `${item.year} 年 ${shortMessage(item.message)}`)
+                    .join('；')}`}
+                </Text>
+              ) : null}
             </VStack>
           }
         >
           <Picker
-            title="配置年份"
+            title="查看年份"
             value={String(holidayYear)}
             onChanged={handleYearChange}
           >
+            <Text tag={String(thisYear - 1)}>{thisYear - 1} 年</Text>
             <Text tag={String(thisYear)}>{thisYear} 年</Text>
             <Text tag={String(thisYear + 1)}>{thisYear + 1} 年</Text>
           </Picker>
