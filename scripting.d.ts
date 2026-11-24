@@ -97,6 +97,7 @@ declare module 'scripting' {
   export const Section: (props: any) => any
   export const Spacer: (props: any) => any
   export const Text: (props: any) => any
+  export const TextField: (props: any) => any
   export const VStack: (props: any) => any
   export const ZStack: (props: any) => any
 }

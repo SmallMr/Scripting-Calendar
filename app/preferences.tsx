@@ -1,6 +1,5 @@
 import {
   Button,
-  ColorPicker,
   HStack,
   List,
   Navigation,
@@ -11,6 +10,7 @@ import {
   Section,
   Spacer,
   Text,
+  TextField,
   VStack,
   Widget,
   ZStack,
@@ -56,6 +56,16 @@ const EDITOR_MODES: { value: HolidayMarker; label: string }[] = [
   { value: 'work', label: '补班日（班）' },
   { value: 'none', label: '清除标记' }
 ]
+
+function isValidBackgroundColor(value: string) {
+  const color = value.trim()
+  return (
+    /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(color) ||
+    /^rgba?\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*(,\s*[\d.]+\s*)?\)$/i.test(
+      color
+    )
+  )
+}
 
 function PresetSwatch({
   color,
@@ -242,12 +252,32 @@ function EditorGrid({
   )
 }
 
+function SafeEditorGrid(props: {
+  year: number
+  month: number
+  weekStart: WeekStart
+  data: HolidayYearData
+  onPressed: (key: string) => void
+}) {
+  try {
+    return EditorGrid(props)
+  } catch (error) {
+    console.error(error)
+    return (
+      <Text font={12} foregroundStyle="#E65356">
+        {`配置日历生成失败：${String(error)}`}
+      </Text>
+    )
+  }
+}
+
 export function SettingsScreen() {
   const dismiss = Navigation.useDismiss()
   const thisYear = new Date().getFullYear()
   const [settings, setSettings] = useState<CalendarSettings>(() =>
     readSettings()
   )
+  const [colorDraft, setColorDraft] = useState(settings.background)
   const [holidayYear, setHolidayYear] = useState(thisYear)
   const [savedHolidays, setSavedHolidays] =
     useState<HolidayYearData | null>(() => readHolidayYear(thisYear))
@@ -256,6 +286,7 @@ export function SettingsScreen() {
   )
   const [editorMode, setEditorMode] = useState<HolidayMarker>('rest')
   const [fetching, setFetching] = useState(false)
+  const [editorExpanded, setEditorExpanded] = useState(false)
 
   useEffect(() => {
     writeSettings(settings)
@@ -264,6 +295,13 @@ export function SettingsScreen() {
 
   const patch = (changes: Partial<CalendarSettings>) =>
     setSettings((previous) => ({ ...previous, ...changes }))
+
+  const applyBackground = (background: string) => {
+    setColorDraft(background)
+    if (isValidBackgroundColor(background)) {
+      patch({ background: background.trim() })
+    }
+  }
 
   const holidayData =
     savedHolidays ?? makeWeekendHolidayYear(holidayYear)
@@ -364,19 +402,17 @@ export function SettingsScreen() {
                     settings.background.toLowerCase() ===
                     preset.color.toLowerCase()
                   }
-                  onPressed={() => patch({ background: preset.color })}
+                  onPressed={() => applyBackground(preset.color)}
                 />
               ))}
             </HStack>
           </VStack>
 
-          <ColorPicker
+          <TextField
             title="自定义背景"
-            value={settings.background}
-            supportsOpacity={false}
-            onChanged={(value: string) =>
-              patch({ background: value })
-            }
+            prompt="#F8F8FA"
+            value={colorDraft}
+            onChanged={applyBackground}
           />
         </Section>
 
@@ -472,43 +508,57 @@ export function SettingsScreen() {
             </Text>
           }
         >
-          <Picker
-            title="编辑月份"
-            pickerStyle="menu"
-            value={String(editorMonth)}
-            onChanged={(value: string) =>
-              setEditorMonth(Number(value))
-            }
-          >
-            {Array.from({ length: 12 }, (_, index) => (
-              <Text key={String(index + 1)} tag={String(index + 1)}>
-                {`${index + 1} 月`}
-              </Text>
-            ))}
-          </Picker>
+          {editorExpanded ? (
+            <VStack alignment="leading" spacing={8}>
+              <Picker
+                title="编辑月份"
+                pickerStyle="menu"
+                value={String(editorMonth)}
+                onChanged={(value: string) =>
+                  setEditorMonth(Number(value))
+                }
+              >
+                {Array.from({ length: 12 }, (_, index) => (
+                  <Text key={String(index + 1)} tag={String(index + 1)}>
+                    {`${index + 1} 月`}
+                  </Text>
+                ))}
+              </Picker>
 
-          <Picker
-            title="点按日期时"
-            pickerStyle="menu"
-            value={editorMode}
-            onChanged={(value: string) =>
-              setEditorMode(value as HolidayMarker)
-            }
-          >
-            {EDITOR_MODES.map((mode) => (
-              <Text key={mode.value} tag={mode.value}>
-                {mode.label}
-              </Text>
-            ))}
-          </Picker>
+              <Picker
+                title="点按日期时"
+                pickerStyle="menu"
+                value={editorMode}
+                onChanged={(value: string) =>
+                  setEditorMode(value as HolidayMarker)
+                }
+              >
+                {EDITOR_MODES.map((mode) => (
+                  <Text key={mode.value} tag={mode.value}>
+                    {mode.label}
+                  </Text>
+                ))}
+              </Picker>
 
-          <EditorGrid
-            year={holidayYear}
-            month={editorMonth}
-            weekStart={settings.weekStart}
-            data={holidayData}
-            onPressed={handleEditDay}
-          />
+              <SafeEditorGrid
+                year={holidayYear}
+                month={editorMonth}
+                weekStart={settings.weekStart}
+                data={holidayData}
+                onPressed={handleEditDay}
+              />
+
+              <Button
+                title="收起逐日配置"
+                action={() => setEditorExpanded(false)}
+              />
+            </VStack>
+          ) : (
+            <Button
+              title="打开逐日配置"
+              action={() => setEditorExpanded(true)}
+            />
+          )}
 
           <Button
             title={`清除 ${holidayYear} 年配置`}
