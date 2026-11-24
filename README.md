@@ -2,7 +2,7 @@
 
 Scripting 桌面日历小组件：公历、农历、节气与节日、休息日和补班日。
 
-当前版本：`1.0.21`（打开脚本直接进入设置页，「外观」分组标题显示 `外观 · v1.0.21`）。
+当前版本：`1.0.22`（打开脚本直接进入设置页，「外观」分组标题显示 `外观 · v1.0.22`）。
 
 ## 只有一个脚本
 
@@ -14,7 +14,7 @@ Scripting 桌面日历小组件：公历、农历、节气与节日、休息日�
 1. 在 Scripting 里打开已安装的「日历」脚本。
 2. 进入该脚本的设置，把「远程来源」设为 `https://github.com/SmallMr/Scripting-Calendar`。
 3. 点「检查更新」并等待文件替换完成，然后重新打开脚本。
-4. 看到「外观 · v1.0.21」即表示已更新到这个版本。
+4. 看到「外观 · v1.0.22」即表示已更新到这个版本。
 
 ### 首次安装
 
@@ -94,6 +94,20 @@ npm run package
 ```
 
 `.scripting` 是 ZIP 文件。打包脚本只收录运行时需要的文件。
+
+## 发布
+
+仓库里只保留一个 `Scripting-Calendar.scripting`，每次打包直接覆盖它；不再往仓库提交带版本号的文件。
+
+需要留档某个版本时，打 tag 并建 Release，把当次的包作为 Release 附件上传（附件可以命名为 `Scripting-Calendar-X.Y.Z.scripting`，不入库）：
+
+```powershell
+git tag v1.0.22
+git push origin v1.0.22
+gh release create v1.0.22 Scripting-Calendar.scripting#Scripting-Calendar-1.0.22.scripting
+```
+
+`script.json` 里的 `version` 与 tag 保持一致，方便对照。
 
 ## 第三方
 
