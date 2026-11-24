@@ -5,15 +5,12 @@ import {
   Navigation,
   NavigationStack,
   Picker,
-  ProgressView,
-  RoundedRectangle,
   Section,
   Spacer,
   Text,
   TextField,
   VStack,
   Widget,
-  ZStack,
   useEffect,
   useState
 } from 'scripting'
@@ -27,18 +24,13 @@ import {
   readHolidayYear,
   writeHolidayYear
 } from '../core/holidays'
-import type {
-  HolidayMarker,
-  HolidayYearData
-} from '../core/holidays'
-import {
-  readSettings,
-  writeSettings
-} from '../core/settings'
-import type {
-  CalendarSettings,
-  WeekStart
-} from '../core/settings'
+import type { HolidayMarker, HolidayYearData } from '../core/holidays'
+import { readSettings, writeSettings } from '../core/settings'
+import type { CalendarSettings, WeekStart } from '../core/settings'
+
+const BUILD_TAG = 'v1.0.4'
+
+console.log('[calendar] preferences module loaded')
 
 const BACKGROUND_PRESETS = [
   { color: '#F8F8FA', label: '云白' },
@@ -52,8 +44,6 @@ const EDITOR_MODES: { value: HolidayMarker; label: string }[] = [
   { value: 'work', label: '补班日（班）' },
   { value: 'none', label: '清除标记' }
 ]
-
-const BUILD_TAG = 'v1.0.3'
 
 type EditorCell = {
   key: string
@@ -96,143 +86,10 @@ function isValidBackgroundColor(value: string) {
   )
 }
 
-function PresetSwatch({
-  color,
-  label,
-  selected,
-  onPressed
-}: {
-  color: string
-  label: string
-  selected: boolean
-  onPressed: () => void
-}) {
-  return (
-    <Button action={onPressed} buttonStyle="plain">
-      <VStack alignment="center" spacing={5}>
-        <ZStack frame={{ width: 32, height: 32 }}>
-          <RoundedRectangle
-            fill={selected ? '#25262B' : 'rgba(120,120,128,0.16)'}
-            cornerRadius={16}
-            frame={{ width: 32, height: 32 }}
-          />
-          <RoundedRectangle
-            fill={color}
-            cornerRadius={13}
-            frame={{ width: 26, height: 26 }}
-          />
-        </ZStack>
-        <Text
-          font={10}
-          foregroundStyle="secondaryLabel"
-          lineLimit={1}
-        >
-          {label}
-        </Text>
-      </VStack>
-    </Button>
-  )
-}
-
-function MiniBadge({ type }: { type: 'rest' | 'work' }) {
-  return (
-    <ZStack frame={{ width: 15, height: 15 }}>
-      <RoundedRectangle
-        fill={type === 'rest' ? '#E65356' : '#455B6B'}
-        cornerRadius={4}
-        frame={{ width: 15, height: 15 }}
-      />
-      <Text font={9.5} fontWeight="bold" foregroundStyle="#FFFFFF">
-        {type === 'rest' ? '休' : '班'}
-      </Text>
-    </ZStack>
-  )
-}
-
-function EditorDayCell({
-  cell,
-  data,
-  onPressed
-}: {
-  cell: EditorCell
-  data: HolidayYearData
-  onPressed: (key: string) => void
-}) {
-  const marker: HolidayMarker = data.work.includes(cell.key)
-    ? 'work'
-    : data.rest.includes(cell.key)
-      ? 'rest'
-      : 'none'
-
-  if (!cell.isCurrentMonth) {
-    return (
-      <VStack
-        alignment="center"
-        frame={{ maxWidth: 'infinity', height: 42 }}
-      >
-        <Text
-          font={14}
-          foregroundStyle="tertiaryLabel"
-          lineLimit={1}
-        >
-          {String(cell.day)}
-        </Text>
-      </VStack>
-    )
-  }
-
-  return (
-    <Button
-      action={() => onPressed(cell.key)}
-      buttonStyle="plain"
-      frame={{ maxWidth: 'infinity', height: 42 }}
-    >
-      <ZStack frame={{ maxWidth: 'infinity', height: 42 }}>
-        <VStack alignment="center" spacing={1}>
-          <Text
-            font={15}
-            fontWeight={cell.isToday ? 'semibold' : 'regular'}
-            foregroundStyle={cell.isToday ? '#E65356' : 'label'}
-            lineLimit={1}
-          >
-            {String(cell.day)}
-          </Text>
-          <Text
-            font={8.5}
-            foregroundStyle="tertiaryLabel"
-            lineLimit={1}
-          >
-            {marker === 'rest' ? '休息' : marker === 'work' ? '补班' : ' '}
-          </Text>
-        </VStack>
-
-        {marker !== 'none' ? (
-          <ZStack
-            alignment="topTrailing"
-            frame={{ maxWidth: 'infinity', height: 42 }}
-          >
-            <ZStack
-              frame={{ width: 14, height: 14 }}
-              offset={{ x: -1, y: 1 }}
-            >
-              <RoundedRectangle
-                fill={marker === 'rest' ? '#E65356' : '#455B6B'}
-                cornerRadius={3.5}
-                frame={{ width: 14, height: 14 }}
-              />
-              <Text
-                font={8.5}
-                fontWeight="bold"
-                foregroundStyle="#FFFFFF"
-              >
-                {marker === 'rest' ? '休' : '班'}
-              </Text>
-            </ZStack>
-          </ZStack>
-        ) : null}
-      </ZStack>
-    </Button>
-  )
+function markerOf(data: HolidayYearData, key: string): HolidayMarker {
+  if (data.work.includes(key)) return 'work'
+  if (data.rest.includes(key)) return 'rest'
+  return 'none'
 }
 
 function EditorGrid({
@@ -267,37 +124,60 @@ function EditorGrid({
       </HStack>
       {Array.from({ length: 6 }, (_, row) => (
         <HStack key={String(row)} spacing={0}>
-          {cells.slice(row * 7, row * 7 + 7).map((cell) => (
-            <EditorDayCell
-              key={cell.key}
-              cell={cell}
-              data={data}
-              onPressed={onPressed}
-            />
-          ))}
+          {cells.slice(row * 7, row * 7 + 7).map((cell) => {
+            const marker = cell.isCurrentMonth
+              ? markerOf(data, cell.key)
+              : 'none'
+            return (
+              <Button
+                key={cell.key}
+                action={() => onPressed(cell.key)}
+                buttonStyle="borderless"
+              >
+                <VStack
+                  alignment="center"
+                  spacing={0}
+                  frame={{ maxWidth: 'infinity' }}
+                >
+                  <Text
+                    font={15}
+                    fontWeight={cell.isToday ? 'semibold' : 'regular'}
+                    foregroundStyle={
+                      !cell.isCurrentMonth
+                        ? 'tertiaryLabel'
+                        : cell.isToday
+                          ? '#E65356'
+                          : 'label'
+                    }
+                    lineLimit={1}
+                  >
+                    {String(cell.day)}
+                  </Text>
+                  <Text
+                    font={9}
+                    foregroundStyle={
+                      marker === 'rest'
+                        ? '#E65356'
+                        : marker === 'work'
+                          ? '#455B6B'
+                          : 'tertiaryLabel'
+                    }
+                    lineLimit={1}
+                  >
+                    {marker === 'rest'
+                      ? '休'
+                      : marker === 'work'
+                        ? '班'
+                        : ' '}
+                  </Text>
+                </VStack>
+              </Button>
+            )
+          })}
         </HStack>
       ))}
     </VStack>
   )
-}
-
-function SafeEditorGrid(props: {
-  year: number
-  month: number
-  weekStart: WeekStart
-  data: HolidayYearData
-  onPressed: (key: string) => void
-}) {
-  try {
-    return EditorGrid(props)
-  } catch (error) {
-    console.error(error)
-    return (
-      <Text font={12} foregroundStyle="#E65356">
-        {`配置日历生成失败：${String(error)}`}
-      </Text>
-    )
-  }
 }
 
 export function SettingsScreen() {
@@ -319,7 +199,11 @@ export function SettingsScreen() {
 
   useEffect(() => {
     writeSettings(settings)
-    Widget.reloadAll()
+    try {
+      Widget.reloadAll()
+    } catch (error) {
+      console.error(error)
+    }
   }, [settings])
 
   const patch = (changes: Partial<CalendarSettings>) =>
@@ -413,29 +297,24 @@ export function SettingsScreen() {
             </Text>
           }
         >
-          <VStack alignment="leading" spacing={10}>
-            <HStack alignment="center">
-              <Text>组件背景色</Text>
-              <Spacer />
-              <Text font={12} foregroundStyle="secondaryLabel">
-                {settings.background}
-              </Text>
-            </HStack>
-            <HStack spacing={16}>
-              {BACKGROUND_PRESETS.map((preset) => (
-                <PresetSwatch
-                  key={preset.color}
-                  color={preset.color}
-                  label={preset.label}
-                  selected={
-                    settings.background.toLowerCase() ===
-                    preset.color.toLowerCase()
-                  }
-                  onPressed={() => applyBackground(preset.color)}
-                />
-              ))}
-            </HStack>
-          </VStack>
+          <HStack>
+            <Text>组件背景色</Text>
+            <Spacer />
+            <Text font={12} foregroundStyle="secondaryLabel">
+              {settings.background}
+            </Text>
+          </HStack>
+
+          <HStack spacing={8}>
+            {BACKGROUND_PRESETS.map((preset) => (
+              <Button
+                key={preset.color}
+                title={preset.label}
+                buttonStyle="borderless"
+                action={() => applyBackground(preset.color)}
+              />
+            ))}
+          </HStack>
 
           <TextField
             title="自定义背景"
@@ -455,7 +334,6 @@ export function SettingsScreen() {
         >
           <Picker
             title="每周起始"
-            pickerStyle="menu"
             value={settings.weekStart}
             onChanged={(value: string) =>
               patch({ weekStart: value as WeekStart })
@@ -465,20 +343,9 @@ export function SettingsScreen() {
             <Text tag="monday">周一</Text>
           </Picker>
 
-          <HStack spacing={16}>
-            <HStack spacing={5}>
-              <MiniBadge type="rest" />
-              <Text font={12} foregroundStyle="secondaryLabel">
-                休息
-              </Text>
-            </HStack>
-            <HStack spacing={5}>
-              <MiniBadge type="work" />
-              <Text font={12} foregroundStyle="secondaryLabel">
-                补班
-              </Text>
-            </HStack>
-          </HStack>
+          <Text font={12} foregroundStyle="secondaryLabel">
+            休息日右上角标「休」，补班日右上角标「班」。
+          </Text>
         </Section>
 
         <Section
@@ -491,7 +358,6 @@ export function SettingsScreen() {
         >
           <Picker
             title="配置年份"
-            pickerStyle="menu"
             value={String(holidayYear)}
             onChanged={handleYearChange}
           >
@@ -499,34 +365,31 @@ export function SettingsScreen() {
             <Text tag={String(thisYear + 1)}>{thisYear + 1} 年</Text>
           </Picker>
 
-          <Button action={handleFetch} disabled={fetching}>
-            <HStack>
-              <Text>{`在线获取 ${holidayYear} 年`}</Text>
-              <Spacer />
-              {fetching ? <ProgressView /> : null}
-            </HStack>
-          </Button>
+          <Button
+            title={
+              fetching
+                ? `正在获取 ${holidayYear} 年…`
+                : `在线获取 ${holidayYear} 年`
+            }
+            action={handleFetch}
+            disabled={fetching}
+          />
 
-          <VStack alignment="leading" spacing={5}>
-            <HStack spacing={8}>
-              <MiniBadge type="rest" />
-              <Text>
-                {`${holidayData.rest.length} 个休息日`}
-              </Text>
-              <MiniBadge type="work" />
-              <Text>
-                {`${holidayData.work.length} 个补班日`}
-              </Text>
-            </HStack>
-            <Text font={12} foregroundStyle="secondaryLabel">
-              {sourceText}
+          <HStack>
+            <Text>{`${holidayData.rest.length} 个休息日`}</Text>
+            <Spacer />
+            <Text>{`${holidayData.work.length} 个补班日`}</Text>
+          </HStack>
+
+          <Text font={12} foregroundStyle="secondaryLabel">
+            {sourceText}
+          </Text>
+
+          {savedHolidays?.updatedAt ? (
+            <Text font={12} foregroundStyle="tertiaryLabel">
+              {`更新于 ${formatUpdatedAt(savedHolidays.updatedAt)}`}
             </Text>
-            {savedHolidays?.updatedAt ? (
-              <Text font={12} foregroundStyle="tertiaryLabel">
-                {`更新于 ${formatUpdatedAt(savedHolidays.updatedAt)}`}
-              </Text>
-            ) : null}
-          </VStack>
+          ) : null}
         </Section>
 
         <Section
@@ -541,7 +404,6 @@ export function SettingsScreen() {
             <VStack alignment="leading" spacing={8}>
               <Picker
                 title="编辑月份"
-                pickerStyle="menu"
                 value={String(editorMonth)}
                 onChanged={(value: string) =>
                   setEditorMonth(Number(value))
@@ -556,7 +418,6 @@ export function SettingsScreen() {
 
               <Picker
                 title="点按日期时"
-                pickerStyle="menu"
                 value={editorMode}
                 onChanged={(value: string) =>
                   setEditorMode(value as HolidayMarker)
@@ -569,7 +430,7 @@ export function SettingsScreen() {
                 ))}
               </Picker>
 
-              <SafeEditorGrid
+              <EditorGrid
                 year={holidayYear}
                 month={editorMonth}
                 weekStart={settings.weekStart}
