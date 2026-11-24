@@ -1,4 +1,4 @@
-import { Text, VStack, Widget } from 'scripting'
+import { Storage, Text, VStack, Widget } from 'scripting'
 import { getEffectiveHolidayYear } from './core/holidays'
 import { readMonthCursor } from './core/monthState'
 import { readSettings } from './core/settings'
@@ -21,12 +21,18 @@ const reloadPolicy = {
   date: nextMidnight()
 } as const
 
+const WIDGET_ERROR_KEY = 'calendar-widget-error'
+
 try {
   const settings = readSettings()
   const cursor = readMonthCursor()
   const now = new Date()
   const year = cursor?.year ?? now.getFullYear()
   const holidays = getEffectiveHolidayYear(year)
+
+  try {
+    Storage.remove(WIDGET_ERROR_KEY)
+  } catch {}
 
   Widget.present(
     <CalendarWidget
@@ -38,6 +44,16 @@ try {
   )
 } catch (error) {
   console.error(error)
+  try {
+    Storage.set(WIDGET_ERROR_KEY, {
+      message: String(error),
+      detail:
+        error && typeof error === 'object' && 'stack' in error
+          ? String((error as { stack?: unknown }).stack ?? '')
+          : '',
+      time: Date.now()
+    })
+  } catch {}
   Widget.present(
     <VStack
       alignment="leading"
@@ -49,7 +65,7 @@ try {
       <Text font={14} fontWeight="semibold" foregroundStyle="#1C1C1E">
         日历加载失败
       </Text>
-      <Text font={10} foregroundStyle="#707075" lineLimit={3}>
+      <Text font={10} foregroundStyle="#707075" lineLimit={4}>
         {String(error)}
       </Text>
     </VStack>,

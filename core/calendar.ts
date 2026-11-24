@@ -95,12 +95,17 @@ const LUNAR_FESTIVALS: Record<string, string> = {
 }
 
 export function getLunar(date: Date): SolarLunarResult | null {
-  const result = lunarApi.solar2lunar(
-    date.getFullYear(),
-    date.getMonth() + 1,
-    date.getDate()
-  )
-  return result === -1 ? null : result
+  try {
+    const result = lunarApi.solar2lunar(
+      date.getFullYear(),
+      date.getMonth() + 1,
+      date.getDate()
+    )
+    return result === -1 ? null : result
+  } catch (error) {
+    console.error(error)
+    return null
+  }
 }
 
 function normalizeFestival(name: string) {
@@ -114,11 +119,17 @@ function getLunarFestival(date: Date, lunar: SolarLunarResult) {
     if (fixed) return fixed
   }
 
-  const festivals = lunarApi.getFestivals(
-    date.getFullYear(),
-    date.getMonth() + 1,
-    date.getDate()
-  )
+  let festivals: string[] = []
+  try {
+    festivals = lunarApi.getFestivals(
+      date.getFullYear(),
+      date.getMonth() + 1,
+      date.getDate()
+    )
+  } catch (error) {
+    console.error(error)
+    return ''
+  }
   for (const name of festivals) {
     const normalized = normalizeFestival(name)
     if (normalized) return normalized

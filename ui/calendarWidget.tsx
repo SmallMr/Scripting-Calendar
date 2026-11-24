@@ -168,7 +168,7 @@ export function CalendarWidget({
   const year = cursor?.year ?? now.getFullYear()
   const month = cursor?.month ?? now.getMonth() + 1
   const palette = paletteFor(settings.background)
-  const display = Widget.displaySize
+  const display = Widget.displaySize ?? { width: 338, height: 354 }
   const width = display.width || 338
   const height = display.height || 354
   const scale = Math.max(0.45, Math.min(width / 390, height / 409))

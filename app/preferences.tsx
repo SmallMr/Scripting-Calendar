@@ -8,6 +8,7 @@ import {
   ProgressView,
   Section,
   Spacer,
+  Storage,
   Text,
   TextField,
   VStack,
@@ -29,7 +30,26 @@ import type { HolidayMarker, HolidayYearData } from '../core/holidays'
 import { readSettings, writeSettings } from '../core/settings'
 import type { CalendarSettings, WeekStart } from '../core/settings'
 
-const VERSION = '1.0.8'
+const VERSION = '1.0.9'
+
+const WIDGET_ERROR_KEY = 'calendar-widget-error'
+
+type WidgetError = {
+  message: string
+  detail?: string
+  time: number
+}
+
+function readWidgetError(): WidgetError | null {
+  try {
+    const value = Storage.get<WidgetError>(WIDGET_ERROR_KEY)
+    if (!value || typeof value.message !== 'string') return null
+    return value
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
 
 const PRESETS = [
   { color: '#F8F8FA', label: '云白' },
@@ -171,6 +191,9 @@ export function SettingsScreen() {
   const [editorMode, setEditorMode] = useState<HolidayMarker>('rest')
   const [fetching, setFetching] = useState(false)
   const [editorExpanded, setEditorExpanded] = useState(false)
+  const [widgetError, setWidgetError] = useState<WidgetError | null>(() =>
+    readWidgetError()
+  )
 
   useEffect(() => {
     writeSettings(settings)
@@ -434,6 +457,48 @@ export function SettingsScreen() {
           }
         >
           <Button title="预览小组件" action={openWidgetPreview} />
+        </Section>
+
+        <Section
+          header={<Text>组件诊断</Text>}
+          footer={
+            <Text>
+              组件渲染失败时会在这里留下最后一条错误，用来定位问题。
+            </Text>
+          }
+        >
+          {widgetError ? (
+            <VStack alignment="leading" spacing={4}>
+              <Text font={12} foregroundStyle="#E65356">
+                {widgetError.message}
+              </Text>
+              <Text font={11} foregroundStyle="secondaryLabel">
+                {formatUpdatedAt(widgetError.time)}
+              </Text>
+              {widgetError.detail ? (
+                <Text font={10} foregroundStyle="tertiaryLabel">
+                  {widgetError.detail}
+                </Text>
+              ) : null}
+            </VStack>
+          ) : (
+            <Text font={12} foregroundStyle="secondaryLabel">
+              暂无错误记录
+            </Text>
+          )}
+
+          <Button
+            title="清除错误记录"
+            role="destructive"
+            action={() => {
+              try {
+                Storage.remove(WIDGET_ERROR_KEY)
+              } catch (error) {
+                console.error(error)
+              }
+              setWidgetError(null)
+            }}
+          />
         </Section>
       </List>
     </NavigationStack>
