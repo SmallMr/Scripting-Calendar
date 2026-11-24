@@ -29,7 +29,7 @@ import type { HolidayMarker, HolidayYearData } from '../core/holidays'
 import { readSettings, writeSettings } from '../core/settings'
 import type { CalendarSettings, WeekStart } from '../core/settings'
 
-const VERSION = '1.0.6'
+const VERSION = '1.0.7'
 
 const PRESETS = [
   { color: '#F8F8FA', label: '云白' },
@@ -170,10 +170,15 @@ export function SettingsScreen() {
   )
   const [editorMode, setEditorMode] = useState<HolidayMarker>('rest')
   const [fetching, setFetching] = useState(false)
+  const [editorExpanded, setEditorExpanded] = useState(false)
 
   useEffect(() => {
     writeSettings(settings)
-    Widget.reloadAll()
+    try {
+      Widget.reloadAll()
+    } catch (error) {
+      console.error(error)
+    }
   }, [settings])
 
   const patch = (changes: Partial<CalendarSettings>) =>
@@ -391,13 +396,27 @@ export function SettingsScreen() {
             ))}
           </Picker>
 
-          <EditorGrid
-            year={holidayYear}
-            month={editorMonth}
-            weekStart={settings.weekStart}
-            data={data}
-            onPressed={handleEditDay}
-          />
+          {editorExpanded ? (
+            <EditorGrid
+              year={holidayYear}
+              month={editorMonth}
+              weekStart={settings.weekStart}
+              data={data}
+              onPressed={handleEditDay}
+            />
+          ) : (
+            <Button
+              title="打开逐日配置"
+              action={() => setEditorExpanded(true)}
+            />
+          )}
+
+          {editorExpanded ? (
+            <Button
+              title="收起逐日配置"
+              action={() => setEditorExpanded(false)}
+            />
+          ) : null}
 
           <Button
             title={`清除 ${holidayYear} 年配置`}
